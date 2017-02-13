@@ -104,7 +104,7 @@ public class MoveSearch implements Runnable{
         int boardLength = board.length;
         int count;
         int lastEnemyEncountered;
-        boolean encounteredEnemy;
+        int encounteredEnemy;
 
         for(int row=0; row<boardLength; row++){
             lastEnemyEncountered = -1;
@@ -115,56 +115,64 @@ public class MoveSearch implements Runnable{
                 //If we find the string contains the player
                 if(board[row][col] == player){
 
-                    encounteredEnemy = false;
-                    //CHECK TO THE RIGHT
+
+                    encounteredEnemy = -1;
+                    //====================CHECK TO THE RIGHT====================
                     if(col <= boardLength-5){//to be sure there can actually be a 5-in-a-row to this direction
 
-                        count = 1;
-                        for(int x=col+1; x<col+5; x++){//Sum of how many of our players we encounter in the next 4 spaces
+                        count = 1; //Sum of how many of our players we encounter in the next 4 spaces
+                        for(int x=col+1; x<col+5; x++){
                             if(board[row][x] == player){
                                 count++;
                             }else if(board[row][x] == enemy){
-                                encounteredEnemy = true;
+                                encounteredEnemy = x;
                                 break;
                             }
                         }
 
-                        //
+                        // - O - X - X X O - -
+                        //if encounteredEnemy == index+3, then we are stuck. if encounteredEnemy == index+4, then we have room
+
                         if(count < 3 || count == 5){
                             evaluation += getPointsToAdd(count);
-                            System.out.println("BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+getPointsToAdd(count));
+                            System.out.println("[horiz]BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+getPointsToAdd(count));
                         }
 
                         else if(count == 3){
-                          if(!encounteredEnemy){
+                          if(encounteredEnemy == -1){
                               evaluation += THREES_POINTS;
-                              System.out.println("(1)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+THREES_POINTS);
+                              System.out.println("[horiz(1)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+THREES_POINTS);
                           }else if(col-2 >= 0 && lastEnemyEncountered > -1){//we encountered an enemy before seeing our player & 2 spaces to the right is not off the board.
-                              if(board[row][col-1] != enemy && board[row][col-2] != enemy){ //If the spot before AND two spots before are not enemies, add the point value.
+                              if(encounteredEnemy == col+4 && col-1 >= 0){//we have enough room to make a 4, check to the left one to see if we can make a 5 (-O-X-XXO--)
+                                  if(board[row][col-1] != enemy){
+                                      evaluation += THREES_POINTS;
+                                      System.out.println("[horiz](2)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+THREES_POINTS);
+                                  }
+                              }else if(encounteredEnemy == col+3 && col-2 >= 0){
                                   evaluation += THREES_POINTS;
-                                  System.out.println("(2)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+THREES_POINTS);
+                                  System.out.println("[horiz](3)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+THREES_POINTS);
                               }
                           }
                         }
 
 
                         else if(count == 4 && (col-1 < 0 || col+5 >= boardLength) ){
-                            System.out.println("(1)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+FOURS_POINTS);
+                            System.out.println("[horiz](1)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+FOURS_POINTS);
                             evaluation += FOURS_POINTS;
                         }
                         else { //check for the straight four
                             String rowString = new String(board[row], col-1, 6); //Create string representation to check for straight 4
                             if(isStraightFour(rowString, player)){//If it is a straight 4
-                                System.out.println("(1)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+STRAIGHT_FOUR_POINTS);
+                                System.out.println("[horiz](1)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+STRAIGHT_FOUR_POINTS);
                                 evaluation += STRAIGHT_FOUR_POINTS;
                             }
-                            else if(!encounteredEnemy){//If it is possible to have a straight 4, and we have not encountered an enemy while searching
+                            else if(encounteredEnemy == -1){//If it is possible to have a straight 4, and we have not encountered an enemy while searching
                                 evaluation += FOURS_POINTS;
-                                System.out.println("(2)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+FOURS_POINTS);
-                            }else{ //If it is possible to have a straight 4, but we have encountered an enemy while searching
+                                System.out.println("[horiz](2)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+FOURS_POINTS);
+                            }else{ //If it is possible to have a straight 4, but we have encountered an enemy while searching, check if there is room on left
                                 if(board[row][col-1] != enemy){
                                     evaluation += FOURS_POINTS;
-                                    System.out.println("(3)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+FOURS_POINTS);
+                                    System.out.println("[horiz](3)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+FOURS_POINTS);
                                 }
                             }
                         }
@@ -173,24 +181,53 @@ public class MoveSearch implements Runnable{
 
 
 
-                    //Check below
-                    if(row <= boardLength-5){//to be sure there can actually be a 5-in-a-row to this direction
+//                    encounteredEnemy = false;
+//                    //====================CHECK BELOW====================
+//                    if(row <= boardLength-5){//to be sure there can actually be a 5-in-a-row to this direction
+//
+//                        count = 1; //Sum of how many of our players we encounter in the next 4 spaces
+//                        for(int x=row+1; x<row+5; x++){
+//                            if(board[x][col] == player){
+//                                count++;
+//                            }else if(board[x][col] == enemy){
+//                                encounteredEnemy = true;
+//                                break;
+//                            }
+//                        }
+//
+//                        if(count < 3 || count == 5){
+//                            evaluation += getPointsToAdd(count);
+//                            System.out.println("[down]BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+getPointsToAdd(count));
+//                        }
+//                        else if(count == 3){
+//                            if(!encounteredEnemy){
+//                                evaluation += THREES_POINTS;
+//                                System.out.println("[down](1)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+THREES_POINTS);
+//                            }else if(row-2 >= 0 && lastEnemyEncountered > -1){//we encountered an enemy before seeing our player & 2 spaces to above is not off the board.
+//                                if(board[row][col-1] != enemy && board[row][col-2] != enemy){ //If the spot before AND two spots before are not enemies, add the point value.
+//                                    evaluation += THREES_POINTS;
+//                                    System.out.println("[down](2)BOARD["+row+"]["+col+"]: ADDED UTILITY VALUE OF: "+THREES_POINTS);
+//                                }
+//                            }
+//                        }
+//
+//
+//
+//                    }//FINISH CHECKING BELOW
 
-                    }
 
-
-                    //Check to the top
+                    //====================CHECK ABOVE====================
                     if(row >= 4){//to be sure there can actually be a 5-in-a-row to this direction
 
                     }
 
-                    //Check bottom-right diagonal
+                    //====================CHECK BOTTOM-RIGHT DIAGONALLY====================
                     if(col+4 < boardLength && row+4 < boardLength){//to be sure there can actually be a 5-in-a-row to this direction
 
                     }
 
 
-                    //Check top-right diagonal
+                    //====================CHECK TOP-RIGHT DIAGONALLY====================
                     if(col+4 < boardLength && row-4 >= 0){//to be sure there can actually be a 5-in-a-row to this direction
 
                     }
