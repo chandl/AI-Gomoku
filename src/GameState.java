@@ -8,6 +8,7 @@
  */
 
 import java.io.*;
+import java.util.Arrays;
 
 public class GameState {
     private String status;
@@ -25,6 +26,12 @@ public class GameState {
     public GameState() {
         connector = GomokuConnector.getInstance();
         update();
+    }
+
+    public GameState(int boardSize, char[][] board, char player){
+        this.boardSize = boardSize;
+        this.board = board;
+        this.player = player;
     }
 
     /**
@@ -168,6 +175,10 @@ public class GameState {
         }
 
         return false;
+    }
+
+    public boolean equalsBoard(char[][] otherBoard){
+       return Arrays.deepEquals(board, otherBoard);
     }
 
     /**
