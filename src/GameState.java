@@ -24,7 +24,7 @@ public class GameState {
     private char player;
     private char[][] board;
     private boolean reEval;
-    private boolean DEBUG = false;
+    private static boolean DEBUG = false;
     private GomokuConnector connector;
     private PrintWriter output = null;
     private static int moveCount;
@@ -123,6 +123,9 @@ public class GameState {
     public char getEnemy(){
         return (player == 'x')? 'o':'x';
     }
+    public static char getEnemy(char p){
+        return (p == 'x')? 'o':'x';
+    }
 
     private void reEvaluate(String s) //game-status as one of 'continuing, 'win, 'lose, 'draw, 'forfeit-time, 'forfeit-move
     {
@@ -214,14 +217,14 @@ public class GameState {
         return this.status;
     }
 
-    private boolean isStraightFour(String in, char player) {
+    private static boolean isStraightFour(String in, char player) {
         String straightFour = " " + player + player + player + player + " ";
         if (DEBUG) System.out.println("IsStraightFour? " + in.replaceAll(" ", "-"));
         return in.equals(straightFour);
     }
 
     //Returns how much to increase the evaluation based on the number of items in a row
-    private double getPointsToAdd(int val) {
+    private static double getPointsToAdd(int val) {
         switch (val) {
             case 1:
                 return ONES_POINTS;
@@ -236,7 +239,7 @@ public class GameState {
         }
     }
 
-    public void printBoard(){
+    public static void printBoard(char[][] board){
         StringBuilder sb = new StringBuilder();
         for(int i=0; i<board.length; i++){
             for(int j=0; j<board.length; j++){
@@ -247,20 +250,20 @@ public class GameState {
         System.out.println(sb.toString());
     }
 
-    public double getStateUtility(){
-        return getStateUtility(this);
-    }
+//    public double getStateUtility(){
+//        return getStateUtility(this.board, this.player);
+//    }
 
     /**
      * Gets the utility for a specified player in a specified state.
      *
-     * @param game The gamestate to analyze
+     * @param board The game board to analyze
+     * @param player The player's state to analyze
      * @return The utility of the gamestate.
      */
-    public double getStateUtility(GameState game) {
-        char player = game.getPlayer();
-        char[][] board = game.getBoard();
-        char enemy = game.getEnemy();
+    public static double getStateUtility(char[][] board, char player) {
+
+        char enemy = getEnemy(player);
         double evaluation = 0.0;
         int boardLength = board.length;
         int count;
