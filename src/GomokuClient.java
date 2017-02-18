@@ -28,7 +28,7 @@ public class GomokuClient
 {
     private static final int GOMOKU_PORT = 17033;
     private static final String GOMOKU_HOST = "localhost";
-    private static double TIME_LIMIT = 2;
+    private static double TIME_LIMIT = 10;
     private static boolean DEBUG = true;
     private static Random rand = new Random();
     private static GomokuConnector connector =  GomokuConnector.newInstance(GOMOKU_HOST, GOMOKU_PORT);
@@ -54,14 +54,17 @@ public class GomokuClient
                     if(currentState.myTurn()){ //currently this client's turn
                         moveSearch = new MoveSearch(currentState);
                         Thread searchThread = new Thread(moveSearch, "moveSearch");
-                        timer = new Timer(searchThread);
+                        timer = new Timer(moveSearch);
                         Thread timerThread = new Thread(timer, "searchTimer");
+
                         searchThread.start(); //search for moves
-                        timerThread.start(); //this will stop the search thread after 2sec
+                        timerThread.start(); //this will stop the search thread after Xsec
                         timerThread.join();
 
                         //choose a random play (for now)
-                        currentState.makePlay(moveSearch.getMoves()[rand.nextInt(moveSearch.getMoves().length)]);
+                        //currentState.makePlay(moveSearch.getMoves()[rand.nextInt(moveSearch.getMoves().length)]);
+
+                        connector.makePlay(moveSearch.getMove());
                     }
 
                 } catch(InterruptedException ie){ie.printStackTrace();}
@@ -73,20 +76,26 @@ public class GomokuClient
     //Timer thread to keep track of runtime of search
     static class Timer implements Runnable{
         Thread searchThread;
+        MoveSearch moveSearch;
 
         public Timer(Thread searchThread){
             this.searchThread = searchThread;
         }
+
+        public Timer(MoveSearch ms){moveSearch=ms;}
 
         @Override
         public void run() {
             try{
                 if(DEBUG)System.out.println("TIMER THREAD STARTED");
                 Thread.sleep(((long)TIME_LIMIT * 1000) - 10); //give 10ms to send move
-                searchThread.interrupt();
+//                searchThread.interrupt();
+                moveSearch.setStopSearch(true);
                 if(DEBUG)System.out.println("Timer: " + TIME_LIMIT + " SECOND(S) ARE UP!");
             }catch(InterruptedException ex){}
         }
     }
+
+
 }
 

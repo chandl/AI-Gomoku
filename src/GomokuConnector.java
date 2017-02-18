@@ -35,6 +35,23 @@ public class GomokuConnector
 
     }
 
+    /**
+     * send a move to the gomoku server
+     * @param play the desired play, 'column row' separated by space
+     */
+    public void makePlay(String play) {
+        if (output == null) {
+            output = getOutputWriter();
+        }
+
+        System.out.println("MakePlay called: "+play);
+        String s = play+"\n";
+        output.print(s);
+        output.flush();
+
+        GameState.increaseCount();
+    }
+
     //Making this class a 'Singleton' - only one instance.
     public static GomokuConnector getInstance(){
         if(instance == null){
