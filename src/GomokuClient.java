@@ -1,7 +1,7 @@
 /*
     Southern Oregon University - CS455 Artificial Intelligence - Lab 2 - Gomoku
 
-    Authors: Chandler Severson, Janelle Bakey, Gabriela Navarrete
+    Authors: Chandler Severson, Janelle Bakey
     Date: 2/10/2017
     Class: GomokuClient.java
         Desc: The driver program for the Gomoku-playing AI bot. Also times execution of search (Timer subclass)

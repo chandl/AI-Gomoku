@@ -1,85 +1,85 @@
 /*
     Southern Oregon University - CS455 Artificial Intelligence - Lab 2 - Gomoku
 
-    Authors: Chandler Severson, Janelle Bakey, Gabriela Navarrete
+    Authors: Chandler Severson, Janelle Bakey
     Date: 2/10/2017
     Class: MoveSearch.java
         Desc: Searches for the most optimal play based on the current game state.
 
     Heuristics:
-        -put info about heuristics used
+        - Used https://www.mimuw.edu.pl/~awojna/SID/referaty/Go-Moku.pdf for reference.
+        - Heuristic function is kinda sucky but it works
     Search:
-        -put info about search implementation
+        - Using Minimax search w/ Alpha-Beta pruning
+        - Pretty slow, usually around 5sec to find good move :-(.
  */
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MoveSearch implements Runnable {
-
-
-
     private GameState gameState;
     private int currentDepth;
-    private String[] moves;
     private boolean stopSearch = false; //set to true when we run out of time.
     private String lastBestMove;
-
-    public void setStopSearch(boolean stopSearch) {
-        this.stopSearch = stopSearch;
-    }
-
-    public MoveSearch(GameState gameState) {
-        this.gameState = gameState;
-
-    }
+    private static int maxDepth = 4;
+    private static boolean DEBUG = false;
 
     @Override
     public void run() {
 
-        boolean DEBUG = true;
         if (DEBUG) System.out.println("MOVE SEARCH THREAD STARTED");
-//        String[] moves = generateMoves(gameState);
+
         GameState currentState = gameState;
         lastBestMove = null;
         String theMove = miniMax(currentState.getBoard(), currentState.getPlayer());
         lastBestMove = theMove;
-        System.out.println("Best Move:" +theMove);
+        if(DEBUG)System.out.println("Best Move:" +theMove);
         System.out.println("Max Depth Reached: "+currentDepth);
     }
 
+    /**
+     * The MiniMax algorithm for adversarial serach.
+     * @param board The current game board.
+     * @param player The player that you would like to generate a move for.
+     * @return The most promising move.
+     */
     public String miniMax(char[][] board, char player){
-//        System.out.println("MINIMAX STARTED");
         currentDepth = 0;
 
         String bestMove = null;
         double bestMoveUtility = Double.NEGATIVE_INFINITY, moveUtility;
         String[] possibleMoves = generateMoves(board);
-        int maxDepth = 4;
-        for(int depth = 1; depth<= maxDepth; depth++){
+        for(int depth = 1; depth <= maxDepth; depth++){//Iteratively deepen the search.
             for(int i=0; i<possibleMoves.length; i++){
-//            System.out.println("Evaluating Move: "+possibleMoves[i]);
                 char[][] theBoard = applyMove(board, player, possibleMoves[i]);
+                moveUtility = minMove(theBoard, GameState.getEnemy(player), depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);//start the search
 
-//            moveUtility = minMove(theBoard, GameState.getEnemy(player), maxDepth);
-                moveUtility = minMove(theBoard, GameState.getEnemy(player), depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-//                System.out.println("MoveUtility for " + possibleMoves[i] + "= "+moveUtility);
+                if(DEBUG)System.out.println("MoveUtility for " + possibleMoves[i] + "= "+moveUtility);
 
                 if(moveUtility > bestMoveUtility){
                     this.lastBestMove = possibleMoves[i];
                     bestMove = possibleMoves[i];
                     bestMoveUtility = moveUtility;
-//                    System.out.println("Best Move Now: "+bestMove);
-
+                    if(DEBUG)System.out.println("Best Move Now: "+bestMove);
                 }
             }
             currentDepth = depth;
         }
 
-
         return bestMove;
     }
 
+    /**
+     * The MAX part of MiniMax algorithm. Maximizes expected outcomes.
+     *
+     * @param board The game board to be analyzed
+     * @param player YOUR player.
+     * @param depthLeft Keeps track of the depth of the search.
+     * @param alpha The ALPHA part of A-B pruning
+     * @param beta The BETA part of A-B pruning
+     * @return A utility value for the specified move and player.
+     */
     public double maxMove(char[][] board, char player, int depthLeft, double alpha, double beta){
 
 
@@ -106,10 +106,19 @@ public class MoveSearch implements Runnable {
         }
     }
 
-
+    /**
+     * The MIN part of MiniMax algoithm. Minimizes expected outcomes.
+     *
+     * @param board The game board to be analyzed.
+     * @param player The ENEMY player.
+     * @param depthLeft Keeps track of the depth of the search.
+     * @param alpha The ALPHA part of A-B pruning
+     * @param beta The BETA part of A-B pruning
+     * @return A utility value for the specified move and player.
+     */
     public double minMove(char[][] board, char player, int depthLeft, double alpha, double beta){
 //        System.out.println("minMove called. depthLeft: "+depthLeft+". Player: "+player);
-        double currentUtility = GameState.getStateUtility(board, player);// - GameState.getStateUtility(board, GameState.getEnemy(player));
+        double currentUtility = GameState.getStateUtility(board, player);
 
         if(currentUtility == GameState.FIVE_IN_A_ROW || depthLeft == 0 || stopSearch){
             return currentUtility;
@@ -131,6 +140,14 @@ public class MoveSearch implements Runnable {
         }
     }
 
+    /**
+     * Makes a 'move' on a game board.
+     *
+     * @param board The current game board.
+     * @param player The player that shall take the move.
+     * @param move The move that shall be taken.
+     * @return A new game board with the specified move executed.
+     */
     public char[][] applyMove(char[][] board, char player, String move){
 //        System.out.println("Possible move: "+game.getPlayer()+ " to "+move);
 
@@ -148,11 +165,27 @@ public class MoveSearch implements Runnable {
     }
 
 
+    /**
+     * This move is set in the MiniMax function.
+     * It can be used to get the (last generated) best move when the time runs out.
+     *
+     * @return The instance variable lastBestMove.
+     */
     public String getMove() {
-        System.out.println("GetMove called. Best move: "+lastBestMove);
+//        System.out.println("GetMove called. Best move: "+lastBestMove);
         return lastBestMove;
     }
 
+
+    /**
+     * Generate possible game boards.
+     * Used in conjunction w/ generateMoves() to get the moves array.
+     *
+     * @param board The current game board
+     * @param player The player that will make the move.
+     * @param moves An Array of possible moves.
+     * @return A List of character matricies (game boards) that are possible.
+     */
     public List<char[][]> generateBoards(char[][] board, char player, String[] moves){
         List<char[][]> possibleBoards = new ArrayList<>();
 
@@ -163,13 +196,15 @@ public class MoveSearch implements Runnable {
         return possibleBoards;
     }
 
+    /**
+     * Generates possible moves based on a game board.
+     * The moves are just empty spaces in the game.
+     *
+     * @param board The current game board.
+     * @return A String array of possible moves.
+     */
     public String[] generateMoves(char[][] board) {
         List<String> moves = new ArrayList<>();
-
-//        String[] moves = new String[(boardSize * boardSize) - moveCount];
-//        if (DEBUG) System.out.println("CREATING MOVE ARRAY, SIZE: " + (boardSize * boardSize - moveCount));
-        //loop through everything in board, add moves where it is
-//        if (DEBUG) System.out.println("Board length: " + board.length);
 
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board.length; j++) {
@@ -177,11 +212,21 @@ public class MoveSearch implements Runnable {
                     moves.add( i + " " + j);
                 }
             }
-//           if (DEBUG) System.out.println("\nMoves Available: " + count);
-//           if (DEBUG) System.out.println("Moves Taken: " + moveCount);
         }
-
         return moves.toArray(new String[moves.size()]);
     }
 
+    /**
+     * To be called when you would like to stop searches.
+     * Used in the Timer class to stop searching after a specified time.
+     *
+     * @param stopSearch Set to true to stop search
+     */
+    public void setStopSearch(boolean stopSearch) {
+        this.stopSearch = stopSearch;
+    }
+
+    public MoveSearch(GameState gameState) {
+        this.gameState = gameState;
+    }
 }

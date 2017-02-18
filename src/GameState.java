@@ -1,14 +1,13 @@
 /*
     Southern Oregon University - CS455 Artificial Intelligence - Lab 2 - Gomoku
 
-    Authors: Chandler Severson, Janelle Bakey, Gabriela Navarrete
+    Authors: Chandler Severson, Janelle Bakey
     Date: 2/10/2017
     Class: GameState.java
         Desc: Object that represents the current state of the game.
  */
 
 import java.io.*;
-import java.util.Arrays;
 
 public class GameState {
     public static final double FIVE_IN_A_ROW = Double.POSITIVE_INFINITY;
@@ -24,33 +23,41 @@ public class GameState {
     private char[][] board;
     private static boolean DEBUG = false;
     private GomokuConnector connector;
-    private PrintWriter output = null;
     private static int moveCount;
 
-
+    /**
+     * Instantiate a real GameState
+     */
     public GameState() {
         connector = GomokuConnector.getInstance();
         update();
     }
 
-    public GameState(GameState g){
-       this.boardSize = g.getBoardSize();
-        this.board = g.getBoard();
-        this.player = g.getPlayer();
-    }
 
+    /**
+     * Instantiate a "fake" GameState (e.g. To Analyze the Board)
+     *
+     * @param boardSize The size of the game board
+     * @param board The game board
+     * @param player The current player
+     */
     public GameState(int boardSize, char[][] board, char player){
         this.boardSize = boardSize;
         this.board = board;
         this.player = player;
     }
 
+    /**
+     *
+     * @return String representation
+     */
     public String toString(){
         StringBuilder sb = new StringBuilder();
-        for(int i=0; i< board.length; i++){
-            for(int j=0; j< board.length; j++){
-                sb.append(board[i][j]);
+        for(int i=0; i<board.length; i++){
+            for(int j=0; j<board.length; j++){
+                sb.append("[").append(board[i][j]).append("]");
             }
+            sb.append("\n");
         }
         return sb.toString();
     }
@@ -182,8 +189,6 @@ public class GameState {
     }
 
 
-
-
     /**
      * If our player is 'o', we will move on odd turns,
      * if it is 'x', we will move on even turns.
@@ -202,9 +207,6 @@ public class GameState {
         return false;
     }
 
-    public boolean equalsBoard(char[][] otherBoard){
-       return Arrays.deepEquals(board, otherBoard);
-    }
 
     /**
      *
@@ -220,7 +222,12 @@ public class GameState {
         return in.equals(straightFour);
     }
 
-    //Returns how much to increase the evaluation based on the number of items in a row
+
+    /**
+     *
+     * @param val the number of pieces in a row
+     * @return the value to add
+     */
     private static double getPointsToAdd(int val) {
         switch (val) {
             case 1:
@@ -236,6 +243,11 @@ public class GameState {
         }
     }
 
+
+    /**
+     * Prints a char[][] board
+     * @param board the gameboard
+     */
     public static void printBoard(char[][] board){
         StringBuilder sb = new StringBuilder();
         for(int i=0; i<board.length; i++){
@@ -246,10 +258,6 @@ public class GameState {
         }
         System.out.println(sb.toString());
     }
-
-//    public double getStateUtility(){
-//        return getStateUtility(this.board, this.player);
-//    }
 
 
 

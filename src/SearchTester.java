@@ -2,7 +2,9 @@ import java.util.List;
 
 /**
  * Created by chandler on 2/12/17.
+ * Used to test Searching Functionality.
  */
+
 public class SearchTester {
 
     public static void main(String[] args){
