@@ -14,19 +14,14 @@
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MoveSearch implements Runnable {
 
 
 
     private GameState gameState;
-    private int maxDepth = 3;
     private int currentDepth;
     private String[] moves;
-    private boolean DEBUG = true;
-    private ConcurrentHashMap<String, Double> seenXMoves;
-    private ConcurrentHashMap<String, Double> seenOMoves;
     private boolean stopSearch = false; //set to true when we run out of time.
     private String lastBestMove;
 
@@ -36,13 +31,13 @@ public class MoveSearch implements Runnable {
 
     public MoveSearch(GameState gameState) {
         this.gameState = gameState;
-        seenXMoves = new ConcurrentHashMap<>();
-        seenOMoves = new ConcurrentHashMap<>();
+
     }
 
     @Override
     public void run() {
 
+        boolean DEBUG = true;
         if (DEBUG) System.out.println("MOVE SEARCH THREAD STARTED");
 //        String[] moves = generateMoves(gameState);
         GameState currentState = gameState;
@@ -54,83 +49,82 @@ public class MoveSearch implements Runnable {
     }
 
     public String miniMax(char[][] board, char player){
-        System.out.println("MINIMAX STARTED");
+//        System.out.println("MINIMAX STARTED");
         currentDepth = 0;
 
         String bestMove = null;
-        double bestMoveUtility = Double.NEGATIVE_INFINITY, moveUtility, worstMoveUtility = Double.POSITIVE_INFINITY;
+        double bestMoveUtility = Double.NEGATIVE_INFINITY, moveUtility;
         String[] possibleMoves = generateMoves(board);
-
-        for(int i=0; i<possibleMoves.length; i++){
+        int maxDepth = 4;
+        for(int depth = 1; depth<= maxDepth; depth++){
+            for(int i=0; i<possibleMoves.length; i++){
 //            System.out.println("Evaluating Move: "+possibleMoves[i]);
-            char[][] theBoard = applyMove(board, player, possibleMoves[i]);
+                char[][] theBoard = applyMove(board, player, possibleMoves[i]);
 
-            moveUtility = minMove(theBoard, GameState.getEnemy(player), maxDepth);
+//            moveUtility = minMove(theBoard, GameState.getEnemy(player), maxDepth);
+                moveUtility = minMove(theBoard, GameState.getEnemy(player), depth, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+//                System.out.println("MoveUtility for " + possibleMoves[i] + "= "+moveUtility);
 
-            System.out.println("MoveUtility for " + possibleMoves[i] + "= "+moveUtility);
+                if(moveUtility > bestMoveUtility){
+                    this.lastBestMove = possibleMoves[i];
+                    bestMove = possibleMoves[i];
+                    bestMoveUtility = moveUtility;
+//                    System.out.println("Best Move Now: "+bestMove);
 
-            if(moveUtility > bestMoveUtility){
-                this.lastBestMove = possibleMoves[i];
-                bestMove = possibleMoves[i];
-                bestMoveUtility = moveUtility;
-                System.out.println("Best Move Now: "+bestMove);
-
+                }
             }
+            currentDepth = depth;
         }
+
 
         return bestMove;
     }
 
-    public double maxMove(char[][] board, char player, int depthLeft){
-//        System.out.println("maxMove called. depthLeft: "+depthLeft+". Player: "+player);
+    public double maxMove(char[][] board, char player, int depthLeft, double alpha, double beta){
 
 
-        double currentUtility = GameState.getStateUtility(board, player);
-        double currentEnemyUtility = GameState.getStateUtility(board, GameState.getEnemy(player));
+        double currentUtility = GameState.getStateUtility(board, player);// - GameState.getStateUtility(board, GameState.getEnemy(player));
 
-        if(currentUtility == GameState.FIVE_IN_A_ROW || currentEnemyUtility > currentUtility || depthLeft == 0 || stopSearch){
+        if(currentUtility == GameState.FIVE_IN_A_ROW  || depthLeft == 0 || stopSearch){
 
-//            System.out.println("maxMove RETURNING "+currentUtility+" ON TURN "+(maxDepth-depthLeft));
             return currentUtility;
         }else{
-            if(currentDepth < maxDepth-depthLeft) currentDepth = maxDepth - depthLeft;
             double bestMoveUtility = Double.NEGATIVE_INFINITY, moveUtility;
             String[] moves = generateMoves(board);
             List<char[][]> boards = generateBoards(board, player, moves);
 
             for(char[][] b : boards){
-                moveUtility = minMove(b, GameState.getEnemy(player), depthLeft-1);
-
+                moveUtility = minMove(b, GameState.getEnemy(player), depthLeft-1, alpha, beta);
                 if(moveUtility > bestMoveUtility) bestMoveUtility = moveUtility;
-            }
 
+                if(moveUtility >= beta) return moveUtility;//Alpha-Beta pruning
+
+                if(moveUtility > alpha) alpha = moveUtility;
+            }
 
             return bestMoveUtility;
         }
     }
 
 
-    public double minMove(char[][] board, char player, int depthLeft){
+    public double minMove(char[][] board, char player, int depthLeft, double alpha, double beta){
 //        System.out.println("minMove called. depthLeft: "+depthLeft+". Player: "+player);
-//        GameState.printBoard(board);
-
-
-        double currentUtility = GameState.getStateUtility(board, player);
+        double currentUtility = GameState.getStateUtility(board, player);// - GameState.getStateUtility(board, GameState.getEnemy(player));
 
         if(currentUtility == GameState.FIVE_IN_A_ROW || depthLeft == 0 || stopSearch){
-//            System.out.println("minMove RETURNING "+currentUtility+" ON TURN "+(maxDepth-depthLeft));
             return currentUtility;
         }else{
-            if(currentDepth < maxDepth-depthLeft) currentDepth = maxDepth - depthLeft;
             double bestMoveUtility = Double.POSITIVE_INFINITY, moveUtility;
             String[] moves = generateMoves(board);
 
             List<char[][]> boards = generateBoards(board, GameState.getEnemy(player), moves);
 
             for(char[][] b: boards){
-                moveUtility = maxMove(b, GameState.getEnemy(player), depthLeft-1);
-
+                moveUtility = maxMove(b, GameState.getEnemy(player), depthLeft-1, alpha, beta);
                 if(moveUtility < bestMoveUtility) bestMoveUtility = moveUtility;
+
+                if(moveUtility <= alpha) return moveUtility;
+                if(moveUtility < beta) beta = moveUtility;
             }
 
             return bestMoveUtility;
@@ -161,24 +155,9 @@ public class MoveSearch implements Runnable {
 
     public List<char[][]> generateBoards(char[][] board, char player, String[] moves){
         List<char[][]> possibleBoards = new ArrayList<>();
-        char[][] possible;
 
         for(int i=0; i<moves.length; i++){
-
-            possible = applyMove(board, player, moves[i]);
-
-            if(player == 'x'){
-                if(seenXMoves.get(possible.toString()) == null){
-                    possibleBoards.add(possible);
-                    seenXMoves.put(possible.toString(), 0.0);
-                }
-            }else if(player == 'o'){
-                if(seenOMoves.get(possible.toString()) == null){
-                    possibleBoards.add(possible);
-                    seenOMoves.put(possible.toString(), 1.0);
-                }
-            }
-
+            possibleBoards.add(applyMove(board, player, moves[i]));
         }
 
         return possibleBoards;

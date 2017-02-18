@@ -19,11 +19,9 @@ public class GameState {
     public static final double ONES_POINTS = 1;
 
     private String status;
-    private String serverData;
     private int boardSize;
     private char player;
     private char[][] board;
-    private boolean reEval;
     private static boolean DEBUG = false;
     private GomokuConnector connector;
     private PrintWriter output = null;
@@ -62,7 +60,7 @@ public class GameState {
      * @return the updated GameState object
      */
     public GameState update() {
-        parseGameState(connector.getInputReader());
+        parseGameState(GomokuConnector.getInputReader());
         return this;
     }
 
@@ -79,8 +77,8 @@ public class GameState {
             if(input.ready()) {
                 if(DEBUG)System.out.println("start reading");
                 do{
-                    serverData = input.readLine();//read data from server
-                    if(DEBUG)System.out.println("["+i+"] "+serverData);
+                    String serverData = input.readLine();
+                    if(DEBUG)System.out.println("["+i+"] "+ serverData);
                     if (i == 0) //reading the first line for game status 'continuing, 'win, 'lose, 'draw, 'forfeit-time, 'forfeit-move'
                     {
                         status = serverData;
@@ -129,6 +127,7 @@ public class GameState {
 
     private void reEvaluate(String s) //game-status as one of 'continuing, 'win, 'lose, 'draw, 'forfeit-time, 'forfeit-move
     {
+        boolean reEval;
         if (status.equals("continuing")) {
             reEval = true;
         } //need to read board placement again
@@ -147,7 +146,7 @@ public class GameState {
     }
 
     public void setMoveCount(int moveCount) {
-        this.moveCount = moveCount;
+        GameState.moveCount = moveCount;
     }
 
     /**
@@ -194,12 +193,10 @@ public class GameState {
     public boolean myTurn(){
         switch(player){
             case 'o':
-                if(moveCount == 1 || moveCount % 2 == 1) return true;
-                else return false;
+                return moveCount == 1 || moveCount % 2 == 1;
 
             case 'x':
-                if(moveCount == 0 || moveCount % 2 == 0) return true;
-                else return false;
+                return moveCount == 0 || moveCount % 2 == 0;
         }
 
         return false;
@@ -243,7 +240,7 @@ public class GameState {
         StringBuilder sb = new StringBuilder();
         for(int i=0; i<board.length; i++){
             for(int j=0; j<board.length; j++){
-                sb.append("["+board[i][j]+"]");
+                sb.append("[").append(board[i][j]).append("]");
             }
             sb.append("\n");
         }
@@ -253,8 +250,6 @@ public class GameState {
 //    public double getStateUtility(){
 //        return getStateUtility(this.board, this.player);
 //    }
-
-
 
 
 

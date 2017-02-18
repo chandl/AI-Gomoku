@@ -28,7 +28,6 @@ public class GomokuClient
 {
     private static final int GOMOKU_PORT = 17033;
     private static final String GOMOKU_HOST = "localhost";
-    private static double TIME_LIMIT = 19.8;
     private static boolean DEBUG = true;
     private static Random rand = new Random();
     private static GomokuConnector connector =  GomokuConnector.newInstance(GOMOKU_HOST, GOMOKU_PORT);
@@ -89,7 +88,8 @@ public class GomokuClient
         public void run() {
             try{
                 if(DEBUG)System.out.println("TIMER THREAD STARTED");
-                Thread.sleep(((long)TIME_LIMIT * 1000) - 10); //give 10ms to send move
+                double TIME_LIMIT = 1.9;
+                Thread.sleep(((long) TIME_LIMIT * 1000) - 10); //give 10ms to send move
 //                searchThread.interrupt();
                 moveSearch.setStopSearch(true);
                 if(DEBUG)System.out.println("Timer: " + TIME_LIMIT + " SECOND(S) ARE UP!");

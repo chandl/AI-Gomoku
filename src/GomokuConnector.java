@@ -16,17 +16,16 @@ public class GomokuConnector
 {
     private static String hostName;
     private static int portNo;
-    private static Socket socket; //new socket to communicate with server
     private static PrintWriter output; //output stream for sockets
     private static BufferedReader input; //input reading
     private static GomokuConnector instance = null;
-    private boolean DEBUG = false;
 
     private GomokuConnector(String hostName, int portNo) {
-        this.hostName = hostName;
-        this.portNo = portNo;
+        GomokuConnector.hostName = hostName;
+        GomokuConnector.portNo = portNo;
         connectToServer(hostName, portNo);
         try{
+            boolean DEBUG = false;
             if(DEBUG)System.out.println("WAITING FOR DATA!");
             while (!input.ready());   //wait until we receive data
             if(DEBUG)System.out.println("RECEIVED DATA!");
@@ -89,7 +88,7 @@ public class GomokuConnector
     private void connectToServer(String hostName, int portNo)
     {
         try {
-            socket = new Socket(hostName, portNo); //connect to machine (networkName) on port (portNo)
+            Socket socket = new Socket(hostName, portNo);
             output = new PrintWriter(socket.getOutputStream()); //output stream to communicate with server
             input = new BufferedReader(new InputStreamReader(socket.getInputStream())); //read input from server
 
