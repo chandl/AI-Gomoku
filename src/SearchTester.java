@@ -37,12 +37,8 @@ public class SearchTester {
         MoveSearch ms = new MoveSearch(g);
 
         String[] moves = ms.generateMoves(tb2);
-        List<char[][]> boards = ms.generateBoards(tb2, 'o', moves);
-        int count = 0;
-        for(char[][] b : boards){
-            System.out.println("Board "+(count++)+": ");
-            GameState.printBoard(b);
-        }
+        System.out.println("Best Move: "+ms.miniMax( tb2, 'o'));
+
 
     }
 

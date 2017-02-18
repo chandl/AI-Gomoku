@@ -28,7 +28,7 @@ public class GomokuClient
 {
     private static final int GOMOKU_PORT = 17033;
     private static final String GOMOKU_HOST = "localhost";
-    private static double TIME_LIMIT = 10;
+    private static double TIME_LIMIT = 19.8;
     private static boolean DEBUG = true;
     private static Random rand = new Random();
     private static GomokuConnector connector =  GomokuConnector.newInstance(GOMOKU_HOST, GOMOKU_PORT);
@@ -47,9 +47,10 @@ public class GomokuClient
 
         if(DEBUG)System.out.println("Color: "+currentState.getPlayer() + ". Turn: "+currentState.myTurn());
 
-        while(!currentState.getStatus().equals("forfeit-time") ){
+        while(currentState.getStatus().equals("continuing") ){
             do{
                 try{
+//                    if(currentState.getMoveCount() == 0) connector.makePlay(currentState.getBoardSize()/2 + " " + currentState.getBoardSize()/2);
                     lastMoveCount = currentState.getMoveCount();
                     if(currentState.myTurn()){ //currently this client's turn
                         moveSearch = new MoveSearch(currentState);

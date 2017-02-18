@@ -13,8 +13,8 @@ import java.util.Arrays;
 public class GameState {
     public static final double FIVE_IN_A_ROW = Double.POSITIVE_INFINITY;
     public static final double STRAIGHT_FOUR_POINTS = 1000;
-    public static final double FOURS_POINTS = 100;
-    public static final double THREES_POINTS = 25;
+    public static final double FOURS_POINTS = 500;
+    public static final double THREES_POINTS = 100;
     public static final double TWOS_POINTS = 5;
     public static final double ONES_POINTS = 1;
 
@@ -254,6 +254,10 @@ public class GameState {
 //        return getStateUtility(this.board, this.player);
 //    }
 
+
+
+
+
     /**
      * Gets the utility for a specified player in a specified state.
      *
@@ -262,6 +266,7 @@ public class GameState {
      * @return The utility of the gamestate.
      */
     public static double getStateUtility(char[][] board, char player) {
+        double[][] maxUtility = new double[board.length][board.length];
 
         char enemy = getEnemy(player);
         double evaluation = 0.0;
@@ -349,6 +354,8 @@ public class GameState {
                         }
 
                     }//FINISH CHECKING TO THE RIGHT
+                    maxUtility[row][col] = evaluation;
+                    evaluation = 0;
 
 
                     encounteredEnemy = -1;
@@ -421,6 +428,11 @@ public class GameState {
 
                     }//FINISH CHECKING BELOW
 
+                    if(evaluation > maxUtility[row][col]){
+                        maxUtility[row][col] = evaluation;
+                    }
+                    evaluation = 0;
+
                     encounteredEnemy = -1;
                     //====================CHECK ABOVE====================
                     if (row >= 4) {//to be sure there can actually be a 5-in-a-row to this direction
@@ -492,6 +504,11 @@ public class GameState {
 
                     }//FINISH CHECKING ABOVE
 
+                    if(evaluation > maxUtility[row][col]){
+                        maxUtility[row][col] = evaluation;
+                    }
+                    evaluation = 0;
+
                     encounteredEnemy = -1;
                     encounteredEnemyY = -1;
                     //====================CHECK BOTTOM-RIGHT DIAGONALLY====================
@@ -540,7 +557,7 @@ public class GameState {
                         } else { //check for the straight four
                             char[] newChars = new char[6];
 
-                            for (int b = row - 1, c = col - 1, i = 0; b < boardLength && b < row + 5; b++, c++, i++) {
+                            for (int b = row - 1, c = col - 1, i = 0; b < boardLength && b < row + 5 && b >= 0 && c >= 0; b++, c++, i++) {
                                 if (DEBUG) System.out.println(b + " " + c);
                                 newChars[i] = board[b][c];
                             }
@@ -555,7 +572,7 @@ public class GameState {
                                 if (DEBUG)
                                     System.out.println("[BR-D](2)BOARD[" + row + "][" + col + "]: ADDED UTILITY VALUE OF: " + FOURS_POINTS);
                             } else { //If it is possible to have a straight 4, but we have encountered an enemy while searching, check if there is room on left
-                                if (board[row - 1][col - 1] != enemy) {
+                                if (row-1 >= 0 && col-1 >= 0 && board[row - 1][col - 1] != enemy) {
                                     evaluation += FOURS_POINTS;
                                     if (DEBUG)
                                         System.out.println("[BR-D](3)BOARD[" + row + "][" + col + "]: ADDED UTILITY VALUE OF: " + FOURS_POINTS);
@@ -564,6 +581,11 @@ public class GameState {
                         }
 
                     }//FINISH BOTTOM RIGHT DIAGONAL
+
+                    if(evaluation > maxUtility[row][col]){
+                        maxUtility[row][col] = evaluation;
+                    }
+                    evaluation = 0;
 
                     encounteredEnemy = -1;
                     encounteredEnemyY = -1;
@@ -638,9 +660,19 @@ public class GameState {
                         }
                     }//FINISH TOP-RIGHT DIAGONAL SEARCH
 
+                    if(evaluation > maxUtility[row][col]){
+                        maxUtility[row][col] = evaluation;
+                    }
+
                 }
             }//inner (column) loop
         }//outer (row) loop
+
+        for(int i=0; i<board.length; i++){
+            for(int j =0; j<board.length; j++){
+                evaluation += maxUtility[i][j];
+            }
+        }
 
         return evaluation;
     }
