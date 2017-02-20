@@ -32,4 +32,4 @@ Artificial Intelligence, A Modern Approach - Third Edition (Russel & Norvig).
     When implementing the Heuristic evaluation function, we overlooked a few things,
 causing some logic issues later in development. In addition, the actual move search
 runs quite slow, sometimes up to 5-10sec to find an optimal move. We won't be winning
-any tournaments with this one :-(.
+any tournaments with this one. (Feb 20, 2017: Our AI actually won the class tournament!!)
