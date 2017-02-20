@@ -15,7 +15,9 @@
  */
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MoveSearch implements Runnable {
     private GameState gameState;
@@ -50,6 +52,7 @@ public class MoveSearch implements Runnable {
         String bestMove = null;
         double bestMoveUtility = Double.NEGATIVE_INFINITY, moveUtility;
         String[] possibleMoves = generateMoves(board);
+        //String[] possibleMoves = generateAdjacentMoves(board);
         for(int depth = 1; depth <= maxDepth; depth++){//Iteratively deepen the search.
             for(int i=0; i<possibleMoves.length; i++){
                 char[][] theBoard = applyMove(board, player, possibleMoves[i]);
@@ -90,7 +93,8 @@ public class MoveSearch implements Runnable {
             return currentUtility;
         }else{
             double bestMoveUtility = Double.NEGATIVE_INFINITY, moveUtility;
-            String[] moves = generateMoves(board);
+//            String[] moves = generateMoves(board);
+            String[] moves = generateAdjacentMoves(board);
             List<char[][]> boards = generateBoards(board, player, moves);
 
             for(char[][] b : boards){
@@ -124,7 +128,7 @@ public class MoveSearch implements Runnable {
             return currentUtility;
         }else{
             double bestMoveUtility = Double.POSITIVE_INFINITY, moveUtility;
-            String[] moves = generateMoves(board);
+            String[] moves = generateAdjacentMoves(board);
 
             List<char[][]> boards = generateBoards(board, GameState.getEnemy(player), moves);
 
@@ -194,6 +198,54 @@ public class MoveSearch implements Runnable {
         }
 
         return possibleBoards;
+    }
+
+
+    /**
+     * Generates possible adjacent moves based on a game board.
+     * The moves are just empty spaces in the game.
+     *
+     * @param board The current game board.
+     * @return A String array of possible adjacent moves.
+     */
+    public String[] generateAdjacentMoves(char[][] board) {
+        List<String> moves = new ArrayList<>();
+        Set<String> movesSet = new HashSet<>();
+
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board.length; j++) {
+                if (board[i][j] == 'o' || board[i][j] == 'x') { //success!
+                    for(int x=1; x <=6; x++){
+                        if(i+x < board.length && board[i+x][j] == ' '){//down
+                            movesSet.add( (i+x) + " " + j);
+                        }
+                        if(i-x >= 0 && board[i-x][j] == ' '){//up
+                            movesSet.add( (i-x) + " " + j);
+                        }
+                        if(j+x < board.length && board[i][j+x] == ' '){//right
+                            movesSet.add( i + " " + (j+x));
+                        }
+                        if(j-x >= 0 && board[i][j-x] == ' '){//left
+                            movesSet.add( i + " " + (j-x));
+                        }
+                        if(i-x >= 0 && j-x >= 0 && board[i-x][j-x] == ' '){//top-left diag
+                            movesSet.add( (i-x) + " " + (j-x));
+                        }
+                        if(i+x < board.length && j-x >=0 && board[i+x][j-x] == ' '){//bottom-left diag
+                            movesSet.add( (i+x) + " " + (j-x));
+                        }
+                        if(i-x >= 0 && j+x < board.length && board[i-x][j+x] == ' '){//top-right diag
+                            movesSet.add( (i-x) + " " + (j+x));
+                        }
+                        if(i+x < board.length && j+x < board.length && board[i+x][j+x] == ' '){//bottom-right diag
+                            movesSet.add( (i+x) + " " + (j+x));
+                        }
+                    }
+                }
+            }
+        }
+        moves.addAll(movesSet);//avoid duplicates
+        return moves.toArray(new String[moves.size()]);
     }
 
     /**

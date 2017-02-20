@@ -28,7 +28,7 @@ public class GomokuClient
 {
     private static final int GOMOKU_PORT = 17033;
     private static final String GOMOKU_HOST = "localhost";
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
     private static Random rand = new Random();
     private static GomokuConnector connector =  GomokuConnector.newInstance(GOMOKU_HOST, GOMOKU_PORT);
     GameState currentState;

@@ -43,7 +43,7 @@ public class GomokuConnector
             output = getOutputWriter();
         }
 
-        System.out.println("MakePlay called: "+play);
+//        System.out.println("MakePlay called: "+play);
         String s = play+"\n";
         output.print(s);
         output.flush();
